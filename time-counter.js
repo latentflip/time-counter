@@ -100,8 +100,8 @@ Timer.prototype._update = function () {
         s = Math.floor(diff / 1000) % 60,
         min = Math.floor((diff / 1000) / 60) % 60,
         hr = Math.floor(((diff / 1000) / 60) / 60) % 60,
-        hasHours = hr > 0,
-        time = ((this.config.showHours || hasHours) ? hr + ':' : '') + [hasHours ? this._zeroPad(min) : min, this._zeroPad(s)].join(':');
+        hasHours = this.config.showHours || hr > 0,
+        time = (hasHours ? hr + ':' : '') + [hasHours ? this._zeroPad(min) : min, this._zeroPad(s)].join(':');
 
     if (this.time !== time) {
         this.time = time;
