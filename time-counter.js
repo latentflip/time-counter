@@ -26,6 +26,7 @@ Timer.prototype = Object.create(WildEmitter.prototype, {
 
 Timer.prototype.setStartTime = function () {
     var now = Date.now();
+    var countdownRemaining;
 
     if (this.config.startValue) {
         this.timerStartTime = now - this._parseStartValue(this.config.startValue);
@@ -36,11 +37,13 @@ Timer.prototype.setStartTime = function () {
     if (this.config.direction === 'down') {
         // adding 1 second here actually ensures that the first value is going to be what
         // was passed in as start time since we're using Math.floor, this makes sense.
-        this.timerTargetTime = now + this._parseStartValue(this.config.startValue) + 999;
+        this.timerTargetTime = now + this._parseStartValue(this.config.startValue) + 999 - this.previouslyElapsedTime;
+        this.timerStartTime = now;
     }
 };
 
 Timer.prototype.start = function () {
+    this.previouslyElapsedTime = 0;
     this.setStartTime();
     if (this.stoppedTime) {
         this.stoppedTime = 0;
@@ -58,6 +61,25 @@ Timer.prototype.stop = function () {
     return this;
 };
 
+Timer.prototype.pause = function () {
+    this.timerStopped = true;
+    this.stoppedTime = Date.now();
+    this.previouslyElapsedTime += this.stoppedTime - this.timerStartTime;
+    this.emit('pause');
+    return this;
+};
+
+Timer.prototype.resume = function () {
+    this.timerStopped = false;
+    this.setStartTime();
+    if (this.config.direction === 'down' && (this.timerTargetTime < this.timerStartTime)) {
+        return this;
+    }
+    this._update();
+    this.emit('resume');
+    return this;
+};
+
 Timer.prototype.getTime = function () {
     return this.time;
 };
@@ -70,7 +92,7 @@ Timer.prototype._update = function () {
         diff = function () {
             var now = Date.now();
             if (direction === 'up') {
-                return now - self.timerStartTime;
+                return (now - self.timerStartTime) + self.previouslyElapsedTime;
             } else {
                 return Math.abs(self.timerTargetTime - now);
             }

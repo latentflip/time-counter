@@ -1,132 +1,4 @@
-(function(e){if("function"==typeof bootstrap)bootstrap("timecounter",e);else if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else if("undefined"!=typeof ses){if(!ses.ok())return;ses.makeTimeCounter=e}else"undefined"!=typeof window?window.TimeCounter=e():global.TimeCounter=e()})(function(){var define,ses,bootstrap,module,exports;
-return (function(e,t,n){function i(n,s){if(!t[n]){if(!e[n]){var o=typeof require=="function"&&require;if(!s&&o)return o(n,!0);if(r)return r(n,!0);throw new Error("Cannot find module '"+n+"'")}var u=t[n]={exports:{}};e[n][0].call(u.exports,function(t){var r=e[n][1][t];return i(r?r:t)},u,u.exports)}return t[n].exports}var r=typeof require=="function"&&require;for(var s=0;s<n.length;s++)i(n[s]);return i})({1:[function(require,module,exports){
-var WildEmitter = require('wildemitter');
-
-
-function Timer(opts) {
-    WildEmitter.call(this);
-    this.config = {
-        direction: 'up',
-        startValue: 0,
-        targetValue: '',
-        interval: 50,
-        showHours: false
-    };
-
-    if (typeof opts === 'object') {
-        for (var item in opts) {
-            this.config[item] = opts[item];
-        }
-    }
-}
-
-Timer.prototype = Object.create(WildEmitter.prototype, {
-    constructor: {
-        value: Timer
-    }
-});
-
-Timer.prototype.setStartTime = function () {
-    var now = Date.now();
-
-    if (this.config.startValue) {
-        this.timerStartTime = now - this._parseStartValue(this.config.startValue);
-    } else {
-        this.timerStartTime = now;
-    }
-
-    if (this.config.direction === 'down') {
-        // adding 1 second here actually ensures that the first value is going to be what
-        // was passed in as start time since we're using Math.floor, this makes sense.
-        this.timerTargetTime = now + this._parseStartValue(this.config.startValue) + 999;
-    }
-};
-
-Timer.prototype.start = function () {
-    this.setStartTime();
-    if (this.stoppedTime) {
-        this.stoppedTime = 0;
-    }
-    this.timerStopped = false;
-    this._update();
-    this.emit('start');
-    return this;
-};
-
-Timer.prototype.stop = function () {
-    this.timerStopped = true;
-    this.stoppedTime = Date.now();
-    this.emit('stop');
-    return this;
-};
-
-Timer.prototype.getTime = function () {
-    return this.time;
-};
-
-Timer.prototype._update = function () {
-    if (this.timerStopped) return;
-
-    var self = this,
-        direction = this.config.direction,
-        diff = function () {
-            var now = Date.now();
-            if (direction === 'up') {
-                return now - self.timerStartTime;
-            } else {
-                return Math.abs(self.timerTargetTime - now);
-            }
-        }(),
-        s = Math.floor(diff / 1000) % 60,
-        min = Math.floor((diff / 1000) / 60) % 60,
-        hr = Math.floor(((diff / 1000) / 60) / 60) % 60,
-        hasHours = hr > 0,
-        time = ((this.config.showHours || hasHours) ? hr + ':' : '') + [hasHours ? this._zeroPad(min) : min, this._zeroPad(s)].join(':');
-
-    if (this.time !== time) {
-        this.time = time;
-        this.emit('change', this.time);
-
-        if (this.config.direction === 'down' && diff < 1000) {
-            this.emit('done');
-            this.stop();
-        } else if (this.config.direction === 'up' && this.time === this.config.targetValue) {
-            this.emit('done');
-            this.stop();
-        }
-    }
-
-    setTimeout(this._update.bind(this), this.config.interval);
-};
-
-Timer.prototype._zeroPad = function (num) {
-    return (('' + num).length === 1) ? '0' + num : num;
-};
-
-Timer.prototype._parseStartValue = function (value) {
-    var split = ('' + value).split(':'),
-        hours = 0,
-        minutes = 0,
-        seconds = 0;
-
-    if (split.length === 3) {
-        hours = parseInt(split[0], 10);
-        minutes = parseInt(split[1], 10);
-        seconds = parseInt(split[2], 10);
-    } else if (split.length === 2) {
-        minutes = parseInt(split[0], 10);
-        seconds = parseInt(split[1], 10);
-    } else if (split.length === 1) {
-        seconds = parseInt(split[0], 10);
-    }
-
-    return (hours * 3600000) + (minutes * 60000) + (seconds * 1000)
-};
-
-
-module.exports = Timer;
-
-},{"wildemitter":2}],2:[function(require,module,exports){
+!function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.TimeCounter=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 /*
 WildEmitter.js is a slim little event emitter by @henrikjoreteg largely based 
 on @visionmedia's Emitter from UI Kit.
@@ -263,6 +135,156 @@ WildEmitter.prototype.getWildcardCallbacks = function (eventName) {
     return result;
 };
 
-},{}]},{},[1])(1)
+},{}],2:[function(_dereq_,module,exports){
+var WildEmitter = _dereq_('wildemitter');
+
+
+function Timer(opts) {
+    WildEmitter.call(this);
+    this.config = {
+        direction: 'up',
+        startValue: 0,
+        targetValue: '',
+        interval: 50,
+        showHours: false
+    };
+
+    if (typeof opts === 'object') {
+        for (var item in opts) {
+            this.config[item] = opts[item];
+        }
+    }
+}
+
+Timer.prototype = Object.create(WildEmitter.prototype, {
+    constructor: {
+        value: Timer
+    }
 });
-;
+
+Timer.prototype.setStartTime = function () {
+    var now = Date.now();
+    var countdownRemaining;
+
+    if (this.config.startValue) {
+        this.timerStartTime = now - this._parseStartValue(this.config.startValue);
+    } else {
+        this.timerStartTime = now;
+    }
+
+    if (this.config.direction === 'down') {
+        // adding 1 second here actually ensures that the first value is going to be what
+        // was passed in as start time since we're using Math.floor, this makes sense.
+        this.timerTargetTime = now + this._parseStartValue(this.config.startValue) + 999 - this.previouslyElapsedTime;
+        this.timerStartTime = now;
+    }
+};
+
+Timer.prototype.start = function () {
+    this.previouslyElapsedTime = 0;
+    this.setStartTime();
+    if (this.stoppedTime) {
+        this.stoppedTime = 0;
+    }
+    this.timerStopped = false;
+    this._update();
+    this.emit('start');
+    return this;
+};
+
+Timer.prototype.stop = function () {
+    this.timerStopped = true;
+    this.stoppedTime = Date.now();
+    this.emit('stop');
+    return this;
+};
+
+Timer.prototype.pause = function () {
+    this.timerStopped = true;
+    this.stoppedTime = Date.now();
+    this.previouslyElapsedTime += this.stoppedTime - this.timerStartTime;
+    this.emit('stop');
+    return this;
+};
+
+Timer.prototype.resume = function () {
+    this.timerStopped = false;
+    this.setStartTime();
+    if (this.config.direction === 'down' && (this.timerTargetTime < this.timerStartTime)) {
+        console.log('bailing');
+        return this;
+    }
+    this._update();
+    this.emit('resume');
+    return this;
+};
+
+Timer.prototype.getTime = function () {
+    return this.time;
+};
+
+Timer.prototype._update = function () {
+    if (this.timerStopped) return;
+
+    var self = this,
+        direction = this.config.direction,
+        diff = function () {
+            var now = Date.now();
+            if (direction === 'up') {
+                return (now - self.timerStartTime) + self.previouslyElapsedTime;
+            } else {
+                return Math.abs(self.timerTargetTime - now);
+            }
+        }(),
+        s = Math.floor(diff / 1000) % 60,
+        min = Math.floor((diff / 1000) / 60) % 60,
+        hr = Math.floor(((diff / 1000) / 60) / 60) % 60,
+        hasHours = hr > 0,
+        time = ((this.config.showHours || hasHours) ? hr + ':' : '') + [hasHours ? this._zeroPad(min) : min, this._zeroPad(s)].join(':');
+
+    if (this.time !== time) {
+        this.time = time;
+        this.emit('change', this.time);
+
+        if (this.config.direction === 'down' && diff < 1000) {
+            this.emit('done');
+            this.stop();
+        } else if (this.config.direction === 'up' && this.time === this.config.targetValue) {
+            this.emit('done');
+            this.stop();
+        }
+    }
+
+    setTimeout(this._update.bind(this), this.config.interval);
+};
+
+Timer.prototype._zeroPad = function (num) {
+    return (('' + num).length === 1) ? '0' + num : num;
+};
+
+Timer.prototype._parseStartValue = function (value) {
+    var split = ('' + value).split(':'),
+        hours = 0,
+        minutes = 0,
+        seconds = 0;
+
+    if (split.length === 3) {
+        hours = parseInt(split[0], 10);
+        minutes = parseInt(split[1], 10);
+        seconds = parseInt(split[2], 10);
+    } else if (split.length === 2) {
+        minutes = parseInt(split[0], 10);
+        seconds = parseInt(split[1], 10);
+    } else if (split.length === 1) {
+        seconds = parseInt(split[0], 10);
+    }
+
+    return (hours * 3600000) + (minutes * 60000) + (seconds * 1000)
+};
+
+
+module.exports = Timer;
+
+},{"wildemitter":1}]},{},[2])
+(2)
+});
